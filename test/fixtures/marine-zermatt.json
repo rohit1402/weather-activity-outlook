@@ -1,0 +1,43 @@
+{
+    "latitude": 46.041664,
+    "longitude": 7.7083435,
+    "generationtime_ms": 0.2893209457397461,
+    "utc_offset_seconds": 7200,
+    "timezone": "Europe/Zurich",
+    "timezone_abbreviation": "GMT+2",
+    "elevation": 1608.0,
+    "daily_units": {
+        "time": "iso8601",
+        "wave_height_max": "m",
+        "wave_period_max": "s"
+    },
+    "daily": {
+        "time": [
+            "2026-10-17",
+            "2026-10-18",
+            "2026-10-19",
+            "2026-10-20",
+            "2026-10-21",
+            "2026-10-22",
+            "2026-10-23"
+        ],
+        "wave_height_max": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+        ],
+        "wave_period_max": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+        ]
+    }
+}

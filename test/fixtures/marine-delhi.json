@@ -1,0 +1,43 @@
+{
+    "latitude": 28.625,
+    "longitude": 77.20836,
+    "generationtime_ms": 0.1798868179321289,
+    "utc_offset_seconds": 19800,
+    "timezone": "Asia/Kolkata",
+    "timezone_abbreviation": "GMT+5:30",
+    "elevation": 231.0,
+    "daily_units": {
+        "time": "iso8601",
+        "wave_height_max": "m",
+        "wave_period_max": "s"
+    },
+    "daily": {
+        "time": [
+            "2026-10-17",
+            "2026-10-18",
+            "2026-10-19",
+            "2026-10-20",
+            "2026-10-21",
+            "2026-10-22",
+            "2026-10-23"
+        ],
+        "wave_height_max": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+        ],
+        "wave_period_max": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+        ]
+    }
+}
