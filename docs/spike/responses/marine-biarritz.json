@@ -1,0 +1,53 @@
+{
+    "latitude": 43.541664,
+    "longitude": -1.5416565,
+    "generationtime_ms": 0.26023387908935547,
+    "utc_offset_seconds": 7200,
+    "timezone": "Europe/Paris",
+    "timezone_abbreviation": "GMT+2",
+    "elevation": 39.0,
+    "daily_units": {
+        "time": "iso8601",
+        "wave_height_max": "m",
+        "wave_period_max": "s",
+        "wave_direction_dominant": "°"
+    },
+    "daily": {
+        "time": [
+            "2026-10-17",
+            "2026-10-18",
+            "2026-10-19",
+            "2026-10-20",
+            "2026-10-21",
+            "2026-10-22",
+            "2026-10-23"
+        ],
+        "wave_height_max": [
+            2.00,
+            1.78,
+            1.12,
+            1.36,
+            2.64,
+            2.66,
+            2.50
+        ],
+        "wave_period_max": [
+            12.00,
+            9.20,
+            13.20,
+            14.30,
+            11.75,
+            10.80,
+            11.10
+        ],
+        "wave_direction_dominant": [
+            311,
+            326,
+            322,
+            305,
+            305,
+            311,
+            307
+        ]
+    }
+}
