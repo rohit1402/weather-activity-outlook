@@ -1,61 +1,28 @@
-import { UpstreamUnavailableError } from '../errors.js';
 import type { Location } from '../providers/GeocodingProvider.js';
 import type { MarineDay, MarineProvider } from '../providers/MarineProvider.js';
 import type { MarineConditionsRepository } from '../repositories/MarineConditionsRepository.js';
-import { localDate, type Clock } from '../time.js';
+import type { Clock } from '../time.js';
+import { CachedDailyConditions, type DailyConditions } from './CachedDailyConditions.js';
 
-export interface MarineConditions {
-    days: MarineDay[];
-    fetchedAt: Date;
-    isStale: boolean;
-}
-
-const HOUR_MS = 60 * 60 * 1000;
+export type MarineConditions = DailyConditions<MarineDay>;
 
 export class MarineService {
-    static readonly REFRESH_AFTER_MS = 3 * HOUR_MS;
-    static readonly MAX_STALE_MS = 48 * HOUR_MS;
+    private readonly conditions: CachedDailyConditions<MarineDay>;
 
-    constructor(
-        private readonly provider: MarineProvider,
-        private readonly repository: MarineConditionsRepository,
-        private readonly clock: Clock,
-    ) {}
-
-    async getMarineConditions(location: Location): Promise<MarineConditions> {
-        const now = this.clock.now();
-        const saved = this.repository.getMarineState(location.id);
-        const timezone = saved.timezone ?? location.timezone;
-        const age = saved.fetchedAt ? now.getTime() - saved.fetchedAt.getTime() : Infinity;
-
-        if (saved.fetchedAt && age < MarineService.REFRESH_AFTER_MS) {
-            return this.read(location.id, timezone, now, saved.fetchedAt, false);
-        }
-
-        try {
-            const forecast = await this.provider.fetchMarine(location.latitude, location.longitude);
-            this.repository.saveMarine(location.id, forecast.days, now, forecast.timezone);
-            return this.read(location.id, timezone ?? forecast.timezone, now, now, false);
-        } catch (err) {
-            if (
-                err instanceof UpstreamUnavailableError &&
-                saved.fetchedAt &&
-                age < MarineService.MAX_STALE_MS
-            ) {
-                return this.read(location.id, timezone, now, saved.fetchedAt, true);
-            }
-            throw err;
-        }
+    constructor(provider: MarineProvider, repository: MarineConditionsRepository, clock: Clock) {
+        this.conditions = new CachedDailyConditions<MarineDay>(
+            {
+                fetch: (location) => provider.fetchMarine(location.latitude, location.longitude),
+                getState: (locationId) => repository.getMarineState(locationId),
+                save: (locationId, forecast, fetchedAt) =>
+                    repository.saveMarine(locationId, forecast.days, fetchedAt, forecast.timezone),
+                findDays: (locationId, fromDate) => repository.findMarineDays(locationId, fromDate),
+            },
+            clock,
+        );
     }
 
-    private read(
-        locationId: number,
-        timezone: string | null,
-        now: Date,
-        fetchedAt: Date,
-        isStale: boolean,
-    ): MarineConditions {
-        const today = localDate(now, timezone ?? 'UTC');
-        return { days: this.repository.findMarineDays(locationId, today), fetchedAt, isStale };
+    getMarineConditions(location: Location): Promise<MarineConditions> {
+        return this.conditions.get(location);
     }
 }

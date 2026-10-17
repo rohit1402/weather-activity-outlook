@@ -1,3 +1,5 @@
+import type { DailyForecast } from './DailyForecast.js';
+
 export interface WeatherDay {
     date: string;
     tempMax: number | null;
@@ -11,10 +13,7 @@ export interface WeatherDay {
     snowDepthMax: number | null;
 }
 
-export interface WeatherForecast {
-    timezone: string;
-    days: WeatherDay[];
-}
+export type WeatherForecast = DailyForecast<WeatherDay>;
 
 export interface ForecastProvider {
     fetchForecast(latitude: number, longitude: number): Promise<WeatherForecast>;

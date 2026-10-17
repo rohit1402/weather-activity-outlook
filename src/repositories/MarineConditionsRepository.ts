@@ -1,11 +1,7 @@
 import type { Statement } from 'better-sqlite3';
 import type { Db } from '../db/connection.js';
+import type { FetchState } from './FetchState.js';
 import type { MarineDay } from '../providers/MarineProvider.js';
-
-export interface MarineState {
-    fetchedAt: Date | null;
-    timezone: string | null;
-}
 
 interface MarineStateRow {
     marine_fetched_at: string | null;
@@ -51,7 +47,7 @@ export class MarineConditionsRepository {
         `);
     }
 
-    getMarineState(locationId: number): MarineState {
+    getMarineState(locationId: number): FetchState {
         const row = this.marineStateStmt.get(locationId);
         return {
             fetchedAt: row?.marine_fetched_at ? new Date(row.marine_fetched_at) : null,

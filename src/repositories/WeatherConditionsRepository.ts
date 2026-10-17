@@ -1,11 +1,7 @@
 import type { Statement } from 'better-sqlite3';
 import type { Db } from '../db/connection.js';
+import type { FetchState } from './FetchState.js';
 import type { WeatherDay } from '../providers/ForecastProvider.js';
-
-export interface WeatherState {
-    fetchedAt: Date | null;
-    timezone: string | null;
-}
 
 interface WeatherStateRow {
     weather_fetched_at: string | null;
@@ -71,7 +67,7 @@ export class WeatherConditionsRepository {
         `);
     }
 
-    getWeatherState(locationId: number): WeatherState {
+    getWeatherState(locationId: number): FetchState {
         const row = this.weatherStateStmt.get(locationId);
         return {
             fetchedAt: row?.weather_fetched_at ? new Date(row.weather_fetched_at) : null,
