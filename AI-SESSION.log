@@ -1,0 +1,187 @@
+# AI-SESSION.log
+# AI-assisted development session, 2026-10-17. Claude Code (Opus 5.5).
+# Source: transcript 2026-10-17-214546-pastedcontent-id92c3.txt
+# Decisions are in DECISIONS.md, scoring rules in SCORING.md, and what was built in WORKLOG.md.
+# This log records how the work was done: who directed it, what the AI did, corrections and checks.
+#
+# Columns:   TIME  ACTOR  TYPE      MESSAGE
+#   TIME     when the AI's turn finished (local time, taken from the transcript)
+#   ACTOR    DEV = developer, AI = Claude Code, CHECK = verified separately, not just reported by the AI
+#   TYPE     RESEARCH, REVIEW, DESIGN, DECIDE, IMPL, FIX, SELF-FIX, TEST, LIVE, VERIFY, PROCESS
+# TEST lines are results the AI reported in the session. VERIFY lines were checked separately.
+# Lines starting with "|" continue the entry above.
+
+15:33  DEV    RESEARCH  Asked for an analysis of the Open-Meteo spike responses in docs/spike/responses/, citing evidence and
+                        | marking fact (F), interpretation (I) and uncertainty (⚠). No file changes allowed.
+15:33  AI     RESEARCH  Analysed 14 files. Found that several didn't test what was intended:
+                        | the elevation files changed elevation, grid cell and variable set at once
+                        | forecast-zermatt-3000 was an overload error payload
+                        | forecast-zermatt-town duplicated forecast-zermatt
+                        | Gulmarg was before the ski season, not early in it
+15:33  AI     RESEARCH  Reported data issues that later shaped the design:
+                        | daily weather_code is the worst hour of the day
+                        | Gulmarg sunshine_duration tracks day length
+                        | the 3800 m snow-depth series jumps with no snowfall
+                        | an inland marine request returns success-shaped nulls
+15:34  AI     IMPL      Wrote the analysis to docs/FINDINGS.md at the developer's request, keeping the developer's heading.
+15:37  AI     REVIEW    Checked the developer's own findings summary. Five lines overstated the evidence:
+                        | "same coordinates" (the grid cell had actually moved about 3 km)
+                        | Queenstown fog used as evidence (Gulmarg was the better example)
+                        | "99 % chance, 2.9 mm" called a contradiction (it isn't one)
+                        | the direction of a forecast change (unknown from the data)
+                        | grid drift described as "slight"
+15:38  DEV    DECIDE    Approved all five fixes. AI applied them.
+
+16:08  DEV    REVIEW    Asked the AI to challenge the decisions, rank each issue must fix or optional, and ask rather than rewrite.
+16:08  AI     REVIEW    Raised 6 must-fix issues, 7 optional ones, and 6 questions. The must-fix issues were:
+                        | lazy refresh contradicted REQUIREMENTS.md
+                        | serving stale data needs a "today" the server never computed
+                        | a geocoding outage would block the stale fallback
+                        | several failure cases were undefined
+                        | the spike files didn't match the final request, so they couldn't be fixtures
+                        | skiing could never be "not applicable", which contradicted the requirements
+16:15  DEV    DECIDE    Answered the 6 questions. AI updated REQUIREMENTS.md and DECISIONS.md, and pointed out
+                        | any answer that still conflicted with another document.
+16:21  DEV    PROCESS   Sent the same answers again. AI saw they were already applied and changed nothing.
+16:24  DEV    DESIGN    Wrote the failure-handling rules and asked for one live check of the not-found response.
+16:24  AI     LIVE      curl with a nonsense name returned HTTP 200 with no "results" key, not an empty list.
+16:24  AI     IMPL      Fetched 14 fixtures using the exact Point 3 requests and checked that none had an error field.
+                        | Found: "Queenstown" alone resolves to South Africa.
+                        | Found: the NZ forecast call failed once with HTTP 503 and worked on retry.
+
+16:44  AI     DESIGN    Explained the project structure and dependencies before editing, as asked.
+                        | Found Node 20.5.1 was too old for the required packages and asked what to do.
+16:44  DEV    DECIDE    Chose to install Node 24 with nvm.
+16:44  AI     IMPL      Built the skeleton. Dealt with npm 11 blocking install scripts, then ran a clean npm ci to
+                        | confirm a fresh clone still builds the SQLite binding.
+16:44  AI     SELF-FIX  Its smoke tests sent the stop signal to npm instead of Node, and one kill pattern matched its own
+                        | command. Reported both as mistakes in its test commands, not in the server.
+16:44  AI     TEST      5 tests passed. Typecheck, lint, format check and build passed. The live server answered the health query.
+16:46  DEV    DESIGN    Asked for 4-space indentation, Open-Meteo endpoints in env, and the GraphQL types in their own folder.
+16:46  AI     IMPL      Made the three changes and added .editorconfig. Kept the types as a TypeScript string so the
+                        | build needs no copy step. 6 tests passed.
+16:50  DEV    REVIEW    Reported that npm run dev failed with "bad option: --env-file-if-exists".
+16:50  AI     FIX       Traced it to the shell still running Node 20. Explained nvm use and nvm alias default, but didn't
+                        | change the global default because it would affect other projects.
+
+16:56  AI     IMPL      Geocoding, first version. Before coding, listed conflicts with the docs: saving lookups was out of scope,
+                        | there is no "display name" field, and malformed input looks like "not found". 39 tests passed.
+16:56  AI     LIVE      Checked that a 1 ms timeout is reported as a timeout, the same way the fake fetch reports it.
+17:00  DEV    DESIGN    Asked for a new repo layout. AI followed it and explained 4 places it deviated, with reasons.
+17:02  DEV    DECIDE    Asked for the geocoding changes to be reverted.
+17:02  AI     PROCESS   The files had never been committed, so the AI backed them up to a scratch folder before removing them.
+                        | Kept the restructure. 6 tests passed.
+17:12  DEV    DESIGN    Asked for geocoding again: class-based, with proper types.
+17:12  AI     IMPL      Built HttpClient, the geocoding provider and LocationService. 45 tests passed.
+17:29  DEV    DESIGN    Gave a fuller spec: SQLite tables, query normalization, zod, a 5 s timeout and UPSTREAM_UNAVAILABLE.
+17:29  AI     DECIDE    Asked 4 questions first. DEV chose: build on the classes, copy two spike fixtures,
+                        | reject bad input as invalid, and accept the storage defaults.
+17:29  AI     TEST      58 tests passed. Live check against a real SQLite file: Paris was resolved once, then served from the database.
+17:50  DEV    REVIEW    Asked the AI to run the tests and check whether anything was broken.
+17:50  AI     REVIEW    Found 1 failing test. The timeout validation had been removed from config.ts, outside the AI's changes.
+                        | Showed what each bad value does at runtime and asked before changing anything.
+17:51  DEV    DECIDE    Asked for the validation to be restored and the formatter run. 58 tests passed.
+
+17:59  AI     DECIDE    GraphQL layer. Asked 3 questions. DEV chose: nullable country, countryCode and timezone,
+                        | rename INVALID_INPUT to BAD_USER_INPUT, and keep the health query.
+17:59  AI     FIX       Found that every error came back as INTERNAL_ERROR. Vitest loaded graphql twice, so
+                        | instanceof GraphQLError was false. Confirmed the cause with a temporary log line,
+                        | then changed the check to error.name.
+17:59  AI     REVIEW    Pointed out without changing: Yoga logs full stack traces for ordinary user errors, and
+                        | UPSTREAM_UNAVAILABLE messages include internal details.
+17:59  AI     TEST      68 tests passed. Live: the built server answered real queries.
+
+18:23  AI     DECIDE    Marine layer. Asked 4 questions. DEV chose the timezone fallback, short column names,
+                        | keeping past rows, and the proposed defaults.
+18:23  AI     TEST      92 tests passed. The past-days test fails if UTC is used instead of the Paris timezone.
+18:28  DEV    REVIEW    Asked what the drawbacks are of not saving the timezone on locations.
+18:28  AI     REVIEW    Answered with examples where UTC gives the wrong day (Queenstown, Los Angeles, Paris) and explained
+                        | why a UTC offset breaks across daylight saving. Changed nothing.
+18:33  DEV    DESIGN    Renamed the table and the repository.
+18:33  AI     REVIEW    Pointed out that the renamed marine table still had weather columns, and offered two options.
+18:36  DEV    DECIDE    Chose separate weather and marine tables. 91 tests passed.
+18:37  AI     IMPL      Recorded the developer's answers from this phase in DECISIONS.md.
+
+~19:00 AI     DECIDE    Forecast layer. Asked 4 questions. DEV chose: daily_weather_conditions, duplicate the refresh logic
+                        | for now (no refactor), mirror the marine tests, and the proposed defaults.
+~19:00 AI     FIX       Rounded snow depth to 0.1 cm, because 0.58 × 100 gives 57.99999999999999 in JavaScript.
+~19:00 AI     PROCESS   Committed the work in 3 steps, as the request asked. 118 tests passed.
+19:03  DEV    PROCESS   Interrupted: "Do not commit. Remove the last commit you did."
+19:03  AI     PROCESS   Undid it with git reset so the changes stayed in the working tree. Saved a memory not to commit here.
+19:04  DEV    PROCESS   Asked for the other two commits to be undone too. AI undid them. 118 tests passed.
+19:14  DEV    DESIGN    Asked for a refactor of the marine and weather code.
+19:14  AI     DECIDE    Listed the duplication at each layer and asked which to change. DEV chose services and types only,
+                        | using composition and generics.
+19:14  AI     SELF-FIX  One of its new tests advanced the clock so far that it tested a refresh instead of a fresh read.
+                        | Fixed before running. 122 tests passed.
+
+19:35  DEV    DESIGN    Proposed the first scoring rules and asked the AI to "fight back".
+19:35  AI     REVIEW    Found these problems:
+                        | the surf waves-only rule contradicted Point 9
+                        | outdoor counted snow twice (as precipitation and as snowfall)
+                        | missing data was only defined for surfing
+                        | scores could go below 0
+                        | the best ski day scored 90, not 100
+                        | some boundaries were undefined
+                        | dangerous waves still got the period bonus
+                        | it wasn't clear which temperature to use
+19:46  DEV    DECIDE    Decided each point.
+19:46  AI     REVIEW    Corrected one of the developer's assumptions: a +10 clear-day bonus would change rankings,
+                        | while scaling scores by 100/90 wouldn't.
+19:49  AI     REVIEW    Showed that "lower bound included" left some values in no tier at all (5 mm, 3 °C, 3.5 m),
+                        | and proposed explicit wording.
+19:51  DEV    DESIGN    Asked for the scoring rules in a separate file. AI created SCORING.md.
+19:53  DEV    REVIEW    "Keep it simple and easier to understand."
+19:53  AI     IMPL      Cut SCORING.md from about 200 lines to about 70, and said where the removed details still live.
+19:54  DEV    DECIDE    Round to whole numbers, and use the AI's boundary proposal.
+20:05  AI     DECIDE    Before coding, found 4 mismatches (including a missing Mumbai fixture and different thunderstorm codes
+                        | in the docs and the request) and asked how to resolve them.
+20:05  AI     IMPL      Fetched marine-mumbai.json with the exact Point 3 request and built the four scorers.
+20:05  AI     SELF-FIX  Three skiing tests kept 6 mm of precipitation that correctly counted as rain. The tests were wrong,
+                        | not the code. 200 tests passed.
+20:08  DEV    DESIGN    Simplified the rules: 3-4 factors per activity, one missing-data rule, no fog or cloud cover.
+                        | Declined the AI's follow-up questions.
+20:08  AI     SELF-FIX  Said its wording of the rain-chance question had been muddled, and restated it as two clear options.
+20:12  DEV    DESIGN    Sent the full simplified rule list.
+20:12  AI     IMPL      Implemented it. Noted four things: rounding had been left out, "rain over 1 mm" was the only strict limit
+                        | left, the single missing-data rule costs skiing some scores, and the heat penalty went from -4 to -3.
+20:12  AI     SELF-FIX  A test used 0.49 m, which displays as "0.5 m". Changed it to 0.4 m. 210 tests passed.
+
+20:21  AI     DECIDE    Wiring into GraphQL. Asked 3 questions. DEV chose: a status enum, return the location with every
+                        | activity UNAVAILABLE when both sources fail, and isStale reflects only the data shown.
+20:21  AI     TEST      218 tests passed.
+20:21  AI     LIVE      The forecast API was slow (Biarritz 11.5 s) or overloaded (Zermatt), so skiing and outdoor scoring
+                        | were never seen working on live data, only on fixtures.
+                        | Suggested a longer timeout or one retry, and logging for failures. The 5 s timeout stayed,
+                        | because it was the developer's decision.
+20:24  DEV    REVIEW    "This is not valid reason" (the indoor reason showed the formula).
+20:27  DEV    REVIEW    "Reasons should be plain english." AI asked whether points should stay in the text. DEV: no points.
+20:27  AI     IMPL      Rewrote every reason as a plain-English phrase and updated the tests and docs.
+20:28  DEV    REVIEW    "Who uses ; in statements." AI replaced the semicolon and saved a memory about reason wording.
+20:32  DEV    REVIEW    Asked for "Better indoors: rain (1.2 mm)" to be a proper statement, then said "Do not add good choice".
+20:32  AI     IMPL      Changed the indoor reason to "Expect ... outside" and updated the memory: reasons state facts and don't recommend.
+20:45  DEV    DESIGN    Skiing should be NOT_APPLICABLE in a week with no snow.
+20:45  AI     REVIEW    Pointed out that this reverses Point 7. Added a rule that a day with unknown snow data keeps skiing
+                        | applicable, and asked the developer to check the "why" it wrote into Point 7.
+20:45  AI     SELF-FIX  Its expected Zermatt ski score was 30, but should be 10 (the slush penalty applies at 14.4 °C).
+                        | Corrected it after checking the fixture. 224 tests passed.
+
+21:00  DEV    REVIEW    Found that weather and marine failures were never logged (OutlookService.ts:42-51).
+21:00  CHECK  VERIFY    The developer had checked that geocoding errors and unexpected errors were logged by Yoga.
+21:00  AI     FIX       Added the warning and checked it on the real server. Suggested the same fix in CachedDailyConditions.
+                        | 225 tests passed.
+21:01  DEV    DECIDE    Agreed. AI added it so each failure is logged exactly once. 226 tests passed.
+21:03  DEV    REVIEW    Found that DECISIONS.md Point 9 contradicted itself about UPSTREAM_UNAVAILABLE.
+21:03  AI     FIX       Rewrote the bullet so geocoding failures and weather/marine failures are described separately.
+21:04  DEV    REVIEW    Found that re-saving a location could wipe its timezone (LocationRepository.ts:48), and gave the COALESCE fix.
+21:04  AI     FIX       Applied it and added 2 tests. Ran the new test against the old code to show it catches the bug. 228 tests passed.
+21:08  DEV    REVIEW    Asked that each scorer receive only the data it uses.
+21:08  AI     IMPL      Changed the scorer signatures and removed DayConditions. Removed 3 tests for cases the new types
+                        | make impossible, and explained the drop. 225 tests passed.
+21:09  DEV    REVIEW    Asked to remove unused options from surfing.ts and rename the Required helper type.
+21:09  AI     IMPL      Made both changes. 225 tests passed.
+21:15  DEV    REVIEW    Asked that the 3.5 m wave cutoff be kept in one place.
+21:15  AI     IMPL      Added a "dangerous" flag on the wave tier and removed SURFING.dangerousWaveM. 225 tests passed.
+21:17  AI     PROCESS   Updated WORKLOG.md. The developer asked for this after each step.
+
+
