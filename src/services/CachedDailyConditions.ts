@@ -48,6 +48,7 @@ export class CachedDailyConditions<TDay extends { date: string }> {
                 saved.fetchedAt &&
                 age < CachedDailyConditions.MAX_STALE_MS
             ) {
+                console.warn(err);
                 return this.read(location.id, timezone, now, saved.fetchedAt, true);
             }
             throw err;

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { UpstreamUnavailableError } from '../../src/errors.js';
 import type { DailyForecast } from '../../src/providers/DailyForecast.js';
 import type { Location } from '../../src/providers/GeocodingProvider.js';
@@ -89,6 +89,25 @@ describe('CachedDailyConditions.get', () => {
 
         clock.advanceHours(0.1);
         await expect(conditions.get(LOCATION)).rejects.toBeInstanceOf(UpstreamUnavailableError);
+    });
+
+    it('logs the failed refresh when it serves stale data, and only then', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const { source, clock, conditions } = setup();
+        await conditions.get(LOCATION);
+        const failure = upstream();
+        source.failWith = failure;
+
+        clock.advanceHours(10);
+        await conditions.get(LOCATION);
+        expect(warn).toHaveBeenCalledTimes(1);
+        expect(warn).toHaveBeenCalledWith(failure);
+
+        // Too old to serve: the error is rethrown instead (and logged by the caller).
+        clock.advanceHours(40);
+        await expect(conditions.get(LOCATION)).rejects.toBe(failure);
+        expect(warn).toHaveBeenCalledTimes(1);
+        warn.mockRestore();
     });
 
     it('rethrows an unexpected error even when stale data could be served', async () => {

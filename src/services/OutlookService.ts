@@ -45,7 +45,10 @@ async function orUnavailable<TDay>(
     try {
         return await conditions;
     } catch (err) {
-        if (err instanceof UpstreamUnavailableError) return null;
+        if (err instanceof UpstreamUnavailableError) {
+            console.warn(err);
+            return null;
+        }
         throw err;
     }
 }

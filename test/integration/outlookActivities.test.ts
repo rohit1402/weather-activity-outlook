@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { UpstreamUnavailableError } from '../../src/errors.js';
 import { FakeClock } from '../helpers/clock.js';
 import { FakeFetch, unreachableFetch } from '../helpers/fakeFetch.js';
 import { fixture } from '../helpers/fixtures.js';
@@ -152,6 +153,18 @@ describe('outlook query with activities', () => {
         ]);
         expect(byActivity(result.activities).SURFING!.days).toEqual([]);
         expect(result).toMatchObject({ fetchedAt: FIRST_FETCH, isStale: false });
+    });
+
+    it('logs a weather or marine failure that it turns into UNAVAILABLE', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        appFor('biarritz', { marineFetch: unreachableFetch });
+
+        await outlook('Biarritz');
+
+        expect(warn).toHaveBeenCalledTimes(1);
+        expect(warn.mock.calls[0]![0]).toBeInstanceOf(UpstreamUnavailableError);
+        expect(warn.mock.calls[0]![0]).toMatchObject({ service: 'Open-Meteo marine' });
+        warn.mockRestore();
     });
 
     it('scores surfing on waves alone when the weather API is down', async () => {
