@@ -9,12 +9,12 @@ import {
     requireFields,
     Tally,
 } from './helpers.js';
-import type { DayConditions, DayScore } from './types.js';
+import type { Applicability, DayConditions, DayScore } from './types.js';
 
 export const NOT_APPLICABLE_REASON = 'No marine data, likely inland';
 export const NO_FORECAST_REASON = 'No wind or storm forecast available';
 
-export type SurfingApplicability = { applicable: true } | { applicable: false; reason: string };
+export type SurfingApplicability = Applicability;
 
 export function surfingApplicability(
     marineDays: readonly (MarineDay | null)[],

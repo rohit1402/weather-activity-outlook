@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { scoreSkiing } from '../../../src/scoring/skiing.js';
-import { day } from '../../helpers/days.js';
+import { scoreSkiing, skiingApplicability } from '../../../src/scoring/skiing.js';
+import { day, weatherDay } from '../../helpers/days.js';
 
 const powder = {
     snowDepthMax: 35,
@@ -110,5 +110,32 @@ describe('scoreSkiing', () => {
 
     it('gives "Missing data" when there is no weather data at all', () => {
         expect(scoreSkiing(day(null))).toEqual({ score: null, reasons: ['Missing data'] });
+    });
+});
+
+describe('skiingApplicability', () => {
+    const snowless = weatherDay({ snowfall: 0.9, snowDepthMax: 9.9 });
+
+    it('is not applicable when no day in the window has snow', () => {
+        expect(skiingApplicability([snowless, snowless, snowless])).toEqual({
+            applicable: false,
+            reason: 'Not enough snow forecast this week',
+        });
+    });
+
+    it.each([
+        ['1 cm of fresh snow', weatherDay({ snowfall: 1, snowDepthMax: 0 })],
+        ['10 cm on the ground', weatherDay({ snowfall: 0, snowDepthMax: 10 })],
+    ])('is applicable when one day has %s', (_label, snowyDay) => {
+        expect(skiingApplicability([snowless, snowyDay, snowless])).toEqual({ applicable: true });
+    });
+
+    it('is applicable when a day has unknown snow data (it might have snow)', () => {
+        const unknown = weatherDay({ snowfall: null });
+        expect(skiingApplicability([snowless, unknown])).toEqual({ applicable: true });
+    });
+
+    it('is applicable for an empty window (data unavailable, not absent)', () => {
+        expect(skiingApplicability([])).toEqual({ applicable: true });
     });
 });

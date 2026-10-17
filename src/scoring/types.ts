@@ -13,3 +13,5 @@ export interface DayScore {
 }
 
 export const MISSING_DATA = 'Missing data';
+
+export type Applicability = { applicable: true } | { applicable: false; reason: string };

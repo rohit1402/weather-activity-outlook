@@ -67,12 +67,16 @@ Why I switched:
 
 Each day gets a score from 0 to 100 and a rank. If an activity is impossible somewhere (surfing in Delhi), it says "not applicable" instead of giving a score.
 
-## 7: Skiing is never "not applicable" in v1
-The requirements say an impossible activity should be "not applicable". For skiing I'm not doing that in v1.
+## 7: Skiing is "not applicable" in a week without snow
+First idea was to never mark skiing "not applicable", because the weather data can't tell an off-season ski town (Gulmarg in October) from a place that never snows (Mumbai). Both just show zero snow.
 
-Why: the weather data can't tell an off-season ski town (Gulmarg in October, no snow) from a place that never snows (Mumbai). Both just show zero snow. Any N/A rule would need something other than weather.
+Changed: a week with no snow at all isn't a skiing week, whatever the reason. Showing seven days of 0 says the same thing less clearly.
 
-Instead, skiing always gets a score, and the reason text explains a low one (e.g. no snow forecast, and the forecast is for the town's elevation, not the slopes; see Point 1).
+- If no day in the 7-day window has snow (every day has snowfall under 1 cm and snow on the ground under 10 cm), skiing is "not applicable" with the reason "Not enough snow forecast this week", and no day is scored.
+- If some days have snow, skiing is scored normally, and the snowless days get 0 with the reason "Not enough snow".
+- A day with unknown snowfall or snow depth might have snow, so it keeps skiing applicable. That day shows "Missing data".
+
+The forecast is still for the town's elevation, not the slopes (Point 1), so a ski town can be "not applicable" while its upper slopes have snow.
 
 ## 8: Indoor sightseeing is the inverse of outdoor
 Indoor sightseeing is possible everywhere, so it's never "not applicable". It's most useful on days that are bad for being outside.

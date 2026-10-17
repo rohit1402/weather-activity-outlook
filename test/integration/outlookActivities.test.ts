@@ -100,7 +100,7 @@ describe('outlook query with activities', () => {
         expect(result.fetchedAt).toBe(FIRST_FETCH);
         expect(result.isStale).toBe(false);
         expect(result.activities.map((a) => [a.activity, a.status, a.reason])).toEqual([
-            ['SKIING', 'AVAILABLE', null],
+            ['SKIING', 'NOT_APPLICABLE', 'Not enough snow forecast this week'],
             ['SURFING', 'AVAILABLE', null],
             ['OUTDOOR_SIGHTSEEING', 'AVAILABLE', null],
             ['INDOOR_SIGHTSEEING', 'AVAILABLE', null],
@@ -116,10 +116,7 @@ describe('outlook query with activities', () => {
             'Strong wind (38 km/h) makes waves choppy',
         ]);
 
-        // No snow at sea level: every ski day is 0.
-        expect(activities.SKIING!.days.map((d) => [d.score, d.reasons])).toEqual(
-            DATES.map(() => [0, ['Not enough snow']]),
-        );
+        expect(activities.SKIING!.days).toEqual([]);
 
         // Indoor is 40 + 0.6 × (100 − outdoor) for every day.
         const outdoor = activities.OUTDOOR_SIGHTSEEING!.days;
@@ -148,7 +145,7 @@ describe('outlook query with activities', () => {
         const result = await outlook('Biarritz');
 
         expect(result.activities.map((a) => [a.activity, a.status, a.reason])).toEqual([
-            ['SKIING', 'AVAILABLE', null],
+            ['SKIING', 'NOT_APPLICABLE', 'Not enough snow forecast this week'],
             ['SURFING', 'UNAVAILABLE', 'Marine forecast unavailable'],
             ['OUTDOOR_SIGHTSEEING', 'AVAILABLE', null],
             ['INDOOR_SIGHTSEEING', 'AVAILABLE', null],
@@ -201,7 +198,12 @@ describe('outlook query with activities', () => {
         const result = await outlook('Biarritz');
 
         expect(result).toMatchObject({ fetchedAt: FIRST_FETCH, isStale: true });
-        expect(result.activities.every((a) => a.status === 'AVAILABLE')).toBe(true);
+        expect(result.activities.map((a) => a.status)).toEqual([
+            'NOT_APPLICABLE', // no snow in Biarritz
+            'AVAILABLE',
+            'AVAILABLE',
+            'AVAILABLE',
+        ]);
     });
 
     it('reports the oldest fetch time when only one source is stale', async () => {
@@ -217,14 +219,42 @@ describe('outlook query with activities', () => {
         expect(fakes.forecast.urls).toHaveLength(2);
     });
 
-    it('scores Zermatt town skiing 0 on its dry, snowless days', async () => {
+    it('marks skiing in Zermatt town as not applicable: no snow all week', async () => {
         appFor('zermatt');
+
+        const skiing = byActivity((await outlook('Zermatt')).activities).SKIING;
+
+        expect(skiing).toEqual({
+            activity: 'SKIING',
+            status: 'NOT_APPLICABLE',
+            reason: 'Not enough snow forecast this week',
+            days: [],
+        });
+    });
+
+    it('scores skiing normally when some days have snow, with 0 on the snowless days', async () => {
+        const forecast = JSON.parse(fixture('forecast-zermatt.json')) as {
+            daily: { snowfall_sum: number[] };
+        };
+        forecast.daily.snowfall_sum[2] = 5;
+        appFor('zermatt', { forecastFetch: new FakeFetch(JSON.stringify(forecast)).fetch });
 
         const skiing = byActivity((await outlook('Zermatt')).activities).SKIING!;
 
         expect(skiing.status).toBe('AVAILABLE');
-        expect(skiing.days.map((d) => [d.date, d.score, d.rank, d.reasons])).toEqual(
-            DATES.map((date, i) => [date, 0, i + 1, ['Not enough snow']]),
-        );
+        expect(skiing.days.map((d) => [d.date, d.score, d.rank])).toEqual([
+            ['2026-10-17', 0, 2],
+            ['2026-10-18', 0, 3],
+            ['2026-10-19', 10, 1],
+            ['2026-10-20', 0, 4],
+            ['2026-10-21', 0, 5],
+            ['2026-10-22', 0, 6],
+            ['2026-10-23', 0, 7],
+        ]);
+        expect(skiing.days[0]!.reasons).toEqual(['Not enough snow']);
+        expect(skiing.days[2]!.reasons).toEqual([
+            '5 cm of fresh snow',
+            'Too warm, snow turns to slush (max 14.4 °C)',
+        ]);
     });
 });

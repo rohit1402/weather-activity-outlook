@@ -2,7 +2,6 @@ import { INDOOR } from './config.js';
 import { missingData } from './helpers.js';
 import type { DayScore } from './types.js';
 
-
 export function scoreIndoor(outdoor: DayScore): DayScore {
     if (outdoor.score === null) return missingData();
 

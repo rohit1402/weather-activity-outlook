@@ -13,6 +13,7 @@ Each day gets a score from 0 to 100 for each activity. Higher is better.
 
 ## Skiing (start at 0)
 
+- No day in the week has snow → not applicable, "Not enough snow forecast this week". A day with unknown snow data counts as possibly snowy.
 - Snowfall under 1 cm and snow on the ground under 10 cm → 0, "Not enough snow"
 - Snow on the ground of 10 cm or more: +50
 - Fresh snowfall of 1 cm or more: +30

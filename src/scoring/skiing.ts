@@ -8,9 +8,27 @@ import {
     requireFields,
     Tally,
 } from './helpers.js';
-import type { DayConditions, DayScore } from './types.js';
+import type { WeatherDay } from '../providers/ForecastProvider.js';
+import type { Applicability, DayConditions, DayScore } from './types.js';
 
-/** Never "not applicable" (DECISIONS.md, Point 7): a place without snow scores 0. */
+export const NO_SNOW_THIS_WEEK = 'Not enough snow forecast this week';
+
+function hasSnow(snowfall: number, snowDepthMax: number): boolean {
+    return snowfall >= SKIING.minSnowCm || snowDepthMax >= SKIING.minSnowDepthCm;
+}
+
+export function skiingApplicability(weatherDays: readonly WeatherDay[]): Applicability {
+    const noSnowAnyDay = weatherDays.every(
+        (day) =>
+            day.snowfall !== null &&
+            day.snowDepthMax !== null &&
+            !hasSnow(day.snowfall, day.snowDepthMax),
+    );
+    return weatherDays.length > 0 && noSnowAnyDay
+        ? { applicable: false, reason: NO_SNOW_THIS_WEEK }
+        : { applicable: true };
+}
+
 export function scoreSkiing({ weather }: DayConditions): DayScore {
     const w = requireFields(weather, [
         'snowfall',
@@ -24,7 +42,7 @@ export function scoreSkiing({ weather }: DayConditions): DayScore {
     if (isThunderstorm(w.weatherCode)) {
         return fixedScore(0, 'Thunderstorms likely, unsafe on the slopes');
     }
-    if (w.snowfall < SKIING.minSnowCm && w.snowDepthMax < SKIING.minSnowDepthCm) {
+    if (!hasSnow(w.snowfall, w.snowDepthMax)) {
         return fixedScore(0, 'Not enough snow');
     }
 
