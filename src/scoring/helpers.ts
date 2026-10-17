@@ -21,15 +21,14 @@ export function rainAmount(precipitation: number, snowfall: number): number {
     return Math.max(0, precipitation - snowfall / SNOW_CM_PER_MM);
 }
 
-type Required<T, K extends keyof T> = { [P in K]: NonNullable<T[P]> };
+type NonNullFields<T, K extends keyof T> = { [P in K]: NonNullable<T[P]> };
 
 export function requireFields<T extends object, K extends keyof T>(
-    source: T | null,
+    source: T,
     fields: readonly K[],
-): Required<T, K> | null {
-    if (source === null) return null;
+): NonNullFields<T, K> | null {
     return fields.every((field) => source[field] !== null && source[field] !== undefined)
-        ? (source as unknown as Required<T, K>)
+        ? (source as unknown as NonNullFields<T, K>)
         : null;
 }
 

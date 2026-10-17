@@ -9,7 +9,7 @@ import {
     Tally,
 } from './helpers.js';
 import type { WeatherDay } from '../providers/ForecastProvider.js';
-import type { Applicability, DayConditions, DayScore } from './types.js';
+import type { Applicability, DayScore } from './types.js';
 
 export const NO_SNOW_THIS_WEEK = 'Not enough snow forecast this week';
 
@@ -29,7 +29,7 @@ export function skiingApplicability(weatherDays: readonly WeatherDay[]): Applica
         : { applicable: true };
 }
 
-export function scoreSkiing({ weather }: DayConditions): DayScore {
+export function scoreSkiing(weather: WeatherDay): DayScore {
     const w = requireFields(weather, [
         'snowfall',
         'snowDepthMax',

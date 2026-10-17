@@ -71,10 +71,6 @@ describe('requireFields', () => {
     it('returns null when a needed field is null', () => {
         expect(requireFields(day, ['a', 'b'])).toBeNull();
     });
-
-    it('returns null when the object itself is null', () => {
-        expect(requireFields(null as typeof day | null, ['a'])).toBeNull();
-    });
 });
 
 describe('clamp and Tally', () => {

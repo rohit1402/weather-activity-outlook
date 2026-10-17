@@ -9,25 +9,22 @@ import {
     requireFields,
     Tally,
 } from './helpers.js';
-import type { Applicability, DayConditions, DayScore } from './types.js';
+import type { WeatherDay } from '../providers/ForecastProvider.js';
+import type { Applicability, DayScore } from './types.js';
 
 export const NOT_APPLICABLE_REASON = 'No marine data, likely inland';
 export const NO_FORECAST_REASON = 'No wind or storm forecast available';
 
-export type SurfingApplicability = Applicability;
-
-export function surfingApplicability(
-    marineDays: readonly (MarineDay | null)[],
-): SurfingApplicability {
+export function surfingApplicability(marineDays: readonly MarineDay[]): Applicability {
     const noWaveData = marineDays.every(
-        (day) => day === null || (day.waveHeightMax === null && day.wavePeriodMax === null),
+        (day) => day.waveHeightMax === null && day.wavePeriodMax === null,
     );
     return marineDays.length > 0 && noWaveData
         ? { applicable: false, reason: NOT_APPLICABLE_REASON }
         : { applicable: true };
 }
 
-export function scoreSurfing({ marine, weather }: DayConditions): DayScore {
+export function scoreSurfing(marine: MarineDay, weather: WeatherDay | null): DayScore {
     const waves = requireFields(marine, ['waveHeightMax', 'wavePeriodMax']);
     if (!waves) return missingData();
 

@@ -1,6 +1,5 @@
 import type { WeatherDay } from '../../src/providers/ForecastProvider.js';
 import type { MarineDay } from '../../src/providers/MarineProvider.js';
-import type { DayConditions } from '../../src/scoring/types.js';
 
 const DATE = '2026-10-17';
 
@@ -23,15 +22,4 @@ export function weatherDay(overrides: Partial<WeatherDay> = {}): WeatherDay {
 
 export function marineDay(overrides: Partial<MarineDay> = {}): MarineDay {
     return { date: DATE, waveHeightMax: 1.2, wavePeriodMax: 11, ...overrides };
-}
-
-export function day(
-    weather: Partial<WeatherDay> | null,
-    marine: Partial<MarineDay> | null = null,
-): DayConditions {
-    return {
-        date: DATE,
-        weather: weather === null ? null : weatherDay(weather),
-        marine: marine === null ? null : marineDay(marine),
-    };
 }

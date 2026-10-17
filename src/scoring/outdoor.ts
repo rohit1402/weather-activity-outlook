@@ -8,10 +8,11 @@ import {
     requireFields,
     Tally,
 } from './helpers.js';
-import type { DayConditions, DayScore } from './types.js';
+import type { WeatherDay } from '../providers/ForecastProvider.js';
+import type { DayScore } from './types.js';
 
 /** Starts at 100 and subtracts. */
-export function scoreOutdoor({ weather }: DayConditions): DayScore {
+export function scoreOutdoor(weather: WeatherDay): DayScore {
     const w = requireFields(weather, [
         'precipitation',
         'snowfall',

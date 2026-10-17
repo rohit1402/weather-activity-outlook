@@ -7,7 +7,6 @@ import { OpenMeteoMarineProvider } from '../../src/providers/OpenMeteoMarineProv
 import { rankDays } from '../../src/scoring/helpers.js';
 import { scoreSkiing } from '../../src/scoring/skiing.js';
 import { scoreSurfing, surfingApplicability } from '../../src/scoring/surfing.js';
-import type { DayConditions } from '../../src/scoring/types.js';
 import { FakeFetch } from '../helpers/fakeFetch.js';
 import { fixture } from '../helpers/fixtures.js';
 
@@ -31,22 +30,19 @@ async function marineDays(city: string): Promise<MarineDay[]> {
     return (await provider.fetchMarine(0, 0)).days;
 }
 
-/** Joins weather and marine days by date; a city without a forecast fixture gets null weather. */
-function join(marine: MarineDay[], weather: WeatherDay[] = []): DayConditions[] {
+/** Scores each marine day with that date's forecast; a city without a forecast fixture gets none. */
+function scoreSurfDays(marine: MarineDay[], weather: WeatherDay[] = []) {
     return marine.map((m) => ({
         date: m.date,
-        marine: m,
-        weather: weather.find((w) => w.date === m.date) ?? null,
+        ...scoreSurfing(m, weather.find((w) => w.date === m.date) ?? null),
     }));
 }
 
 describe('scoring with saved Open-Meteo responses', () => {
     it('scores Biarritz surf above Mumbai on every day', async () => {
-        const biarritz = join(await marineDays('biarritz'), await weatherDays('biarritz')).map(
-            scoreSurfing,
-        );
+        const biarritz = scoreSurfDays(await marineDays('biarritz'), await weatherDays('biarritz'));
         // There is no Mumbai forecast fixture, so Mumbai is scored on waves alone.
-        const mumbai = join(await marineDays('mumbai')).map(scoreSurfing);
+        const mumbai = scoreSurfDays(await marineDays('mumbai'));
 
         expect(biarritz.map((d) => d.score)).toEqual([100, 80, 80, 80, 60, 80, 60]);
         expect(mumbai.map((d) => d.score)).toEqual([10, 10, 10, 10, 10, 10, 10]);
@@ -68,8 +64,9 @@ describe('scoring with saved Open-Meteo responses', () => {
     });
 
     it('ranks the Biarritz surf days, ties going to the earlier date', async () => {
-        const days = join(await marineDays('biarritz'), await weatherDays('biarritz'));
-        const ranked = rankDays(days.map((d) => ({ date: d.date, ...scoreSurfing(d) })));
+        const ranked = rankDays(
+            scoreSurfDays(await marineDays('biarritz'), await weatherDays('biarritz')),
+        );
 
         // Scores 100, 80, 80, 80, 60, 80, 60: the 80s and the 60s are ties.
         expect(ranked.map((d) => [d.date, d.score, d.rank])).toEqual([
@@ -92,9 +89,7 @@ describe('scoring with saved Open-Meteo responses', () => {
     });
 
     it('scores skiing in Zermatt town 0 on its dry, snowless days', async () => {
-        const zermatt = (await weatherDays('zermatt')).map((weather) =>
-            scoreSkiing({ date: weather.date, weather, marine: null }),
-        );
+        const zermatt = (await weatherDays('zermatt')).map(scoreSkiing);
 
         // The fixture has no snowfall all week and at most 1 cm of snow on the ground.
         expect(zermatt).toEqual(
