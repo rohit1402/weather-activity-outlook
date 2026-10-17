@@ -18,7 +18,7 @@
 - City or town input will be provided as a string and resolved to geographical coordinates using an external geocoding API.
 - The forecast window will include today and the following six calendar days, making a 7 day window.
 - Service should make suggestions based on provided city/town local timezone
-- While calculating surfing and indoor sightseeing ranking only weather will be taken into consideration.
+- Non-weather factors such as opening hours, crowds and access are not considered.
 - Forecasts will be refreshed periodically, independently of normal GraphQL requests.
 - Existing persisted forecasts may be served when a refresh fails, provided their age is made clear.
 
