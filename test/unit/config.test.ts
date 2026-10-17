@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { loadConfig } from '../src/config.js';
+import { loadConfig } from '../../src/config.js';
 
 describe('loadConfig', () => {
     it('uses defaults when nothing is set', () => {

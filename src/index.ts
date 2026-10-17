@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { createApp } from './app.js';
 import { loadConfig } from './config.js';
-import { openDb } from './db.js';
+import { openDb } from './db/connection.js';
 
 const config = loadConfig();
 const db = openDb(config.databasePath);

@@ -1,28 +1,10 @@
 import { createSchema, createYoga } from 'graphql-yoga';
-import type { Db } from './db.js';
-import { typeDefs } from './graphql/typeDefs.js';
-
-function databaseIsUp(db: Db): boolean {
-    try {
-        db.prepare('SELECT 1').get();
-        return true;
-    } catch {
-        return false;
-    }
-}
+import type { Db } from './db/connection.js';
+import { createResolvers } from './graphql/resolvers.js';
+import { typeDefs } from './graphql/schema.js';
 
 export function createApp(db: Db) {
     return createYoga({
-        schema: createSchema({
-            typeDefs,
-            resolvers: {
-                Query: {
-                    health: () => {
-                        const database = databaseIsUp(db);
-                        return { status: database ? 'ok' : 'degraded', database };
-                    },
-                },
-            },
-        }),
+        schema: createSchema({ typeDefs, resolvers: createResolvers(db) }),
     });
 }

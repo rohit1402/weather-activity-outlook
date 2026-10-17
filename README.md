@@ -1,8 +1,27 @@
 # weather-activity-outlook
 
-GraphQL service that scores the next 7 days for skiing, surfing, outdoor and indoor sightseeing in a given city, using Open-Meteo data. See [REQUIREMENTS.md](REQUIREMENTS.md) and [DECISIONS.md](DECISIONS.md).
+GraphQL service that scores the next 7 days for skiing, surfing, outdoor and indoor sightseeing in a given city, using Open-Meteo data. See [REQUIREMENTS.md](REQUIREMENTS.md), [DECISIONS.md](DECISIONS.md) and [WORKLOG.md](WORKLOG.md).
 
-Status: project skeleton only. The API has a `health` query; weather ingestion, scoring and location lookup aren't built yet.
+Status: the API has a `health` query. Location lookup, weather ingestion and scoring aren't built yet.
+
+## Project layout
+
+```
+src/
+  index.ts          entrypoint: starts the HTTP server
+  app.ts            builds the GraphQL Yoga app (used by index.ts and tests)
+  config.ts         environment variables
+  graphql/          schema.ts (type definitions), resolvers.ts
+  services/         business logic (empty for now)
+  providers/        Open-Meteo HTTP clients (empty for now)
+  repositories/     SQLite queries (empty for now)
+  scoring/          activity scoring rules (empty for now)
+  db/               SQLite connection
+test/
+  fixtures/         saved Open-Meteo responses
+  unit/             no I/O
+  integration/      through the GraphQL app with a real (in-memory) SQLite
+```
 
 ## Setup
 
@@ -21,7 +40,8 @@ cp .env.example .env   # optional; defaults work without it
 | `npm run dev` | Start the server with reload on change (tsx) |
 | `npm run build` | Compile TypeScript to `dist/` |
 | `npm start` | Run the compiled server from `dist/` |
-| `npm test` | Run tests once (Vitest); `npm run test:watch` to watch |
+| `npm test` | Run all tests once (Vitest); `npm run test:watch` to watch |
+| `npm run test:unit` / `test:integration` | Run one test folder |
 | `npm run typecheck` | Type-check `src/` and `test/` |
 | `npm run lint` | ESLint |
 | `npm run format` / `format:check` | Prettier |

@@ -13,3 +13,12 @@ export function openDb(path: string): Db {
     db.pragma('foreign_keys = ON');
     return db;
 }
+
+export function isDbUp(db: Db): boolean {
+    try {
+        db.prepare('SELECT 1').get();
+        return true;
+    } catch {
+        return false;
+    }
+}

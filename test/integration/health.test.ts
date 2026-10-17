@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createApp } from '../src/app.js';
-import { openDb, type Db } from '../src/db.js';
+import { createApp } from '../../src/app.js';
+import { openDb, type Db } from '../../src/db/connection.js';
 
 async function query(app: ReturnType<typeof createApp>, source: string) {
     const res = await app.fetch('http://localhost/graphql', {
