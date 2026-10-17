@@ -86,9 +86,11 @@ Downside: indoor's best day is always outdoor's worst, so it adds no new informa
 ## 9: Failure handling
 - City not found: return a `LOCATION_NOT_FOUND` error and don't save the miss. Checked with a nonsense name: Open-Meteo returns HTTP 200 with no `results` key at all, not an empty list (`test/fixtures/geo-not-found.json`).
 - Error payloads: check every response for `"error": true`, not just the HTTP status. Treat it as a failure and never save it.
-- Any Open-Meteo failure (error payload, bad HTTP status, timeout after 5 seconds, unreachable, or a response that doesn't match the expected shape, checked with zod) is an `UPSTREAM_UNAVAILABLE` error.
-- Partly null data: if all wave values are null, surfing is "not applicable". If only some days or fields are null, that day gets no score with the reason "missing data", only for the activities that need that field. Nulls are stored as null, never 0.
-- One call fails: weather and marine are independent. If one fails, its activities use old data if it's under 48 hours old (Point 5), or show "unavailable". The other activities aren't affected. The response returns the oldest fetch time used, with `isStale` true if any of the data is old.
+- An Open-Meteo failure is an error payload, a bad HTTP status, a timeout after 5 seconds, an unreachable server, or a response that doesn't match the expected shape (checked with zod). What happens next depends on the call:
+  - Geocoding: the request fails with an `UPSTREAM_UNAVAILABLE` error, unless the search was saved before (Point 5).
+  - Weather or marine: the request still succeeds. The failure only affects that source's activities (next bullets), and it's logged on the server.
+- Partly null data: if all wave values are null, surfing is "not applicable". If only some days or fields are null, that day gets no score with the reason "Missing data", only for the activities that need that field. Nulls are stored as null, never 0.
+- One call fails: weather and marine are independent. If one fails, its activities use old data if it's under 48 hours old (Point 5), or show "unavailable". The other activities aren't affected. The response returns the oldest fetch time used, with `isStale` true if any of the data is old. If both fail, the response still returns the location, with every activity "unavailable" and `fetchedAt` null.
 - Exception for surfing: surfing needs marine and weather data. If the day's forecast is missing entirely, surfing is still scored on waves alone, with the reason "No wind or storm forecast available", instead of getting no score. Waves are what matters most for surfing. The trade-off: the wind penalty and the thunderstorm check are skipped, so a surf score can appear on a day that may have a storm.
 
 ## 10: Test fixtures
