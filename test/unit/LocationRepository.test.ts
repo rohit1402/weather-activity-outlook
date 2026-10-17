@@ -72,6 +72,29 @@ describe('LocationRepository', () => {
         });
     });
 
+    it('keeps a saved timezone when a re-save has none', () => {
+        repository.save({ ...PARIS, timezone: null }, { query: 'paris', countryCode: '' });
+        db.prepare(`UPDATE locations SET timezone = 'Europe/Paris' WHERE id = ?`).run(PARIS.id);
+
+        repository.save({ ...PARIS, timezone: null }, { query: 'paris', countryCode: 'FR' });
+
+        expect(db.prepare('SELECT timezone FROM locations').get()).toEqual({
+            timezone: 'Europe/Paris',
+        });
+    });
+
+    it('still updates the timezone when a re-save has a new one', () => {
+        repository.save(PARIS, { query: 'paris', countryCode: '' });
+        repository.save(
+            { ...PARIS, timezone: 'Europe/Berlin' },
+            { query: 'paris', countryCode: '' },
+        );
+
+        expect(db.prepare('SELECT timezone FROM locations').get()).toEqual({
+            timezone: 'Europe/Berlin',
+        });
+    });
+
     it('rejects a query mapping to a location that does not exist', () => {
         expect(() =>
             db

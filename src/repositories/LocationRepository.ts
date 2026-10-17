@@ -45,7 +45,7 @@ export class LocationRepository {
                 country_code = excluded.country_code,
                 latitude = excluded.latitude,
                 longitude = excluded.longitude,
-                timezone = excluded.timezone,
+                timezone = COALESCE(excluded.timezone, timezone),
                 elevation = excluded.elevation
         `);
 
