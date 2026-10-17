@@ -1,6 +1,6 @@
 # weather-activity-outlook
 
-GraphQL service that scores the next 7 days for skiing, surfing, outdoor and indoor sightseeing in a given city, using Open-Meteo data. See [REQUIREMENTS.md](REQUIREMENTS.md), [DECISIONS.md](DECISIONS.md) and [WORKLOG.md](WORKLOG.md).
+GraphQL service that scores the next 7 days for skiing, surfing, outdoor and indoor sightseeing in a given city, using Open-Meteo data. See [REQUIREMENTS.md](REQUIREMENTS.md), [DECISIONS.md](DECISIONS.md), [SCORING.md](SCORING.md) and [WORKLOG.md](WORKLOG.md).
 
 Status: the API has an `outlook(city, countryCode)` query that returns the resolved location (Open-Meteo geocoding, saved to SQLite), plus `health`. Weather ingestion and scoring aren't built yet.
 
