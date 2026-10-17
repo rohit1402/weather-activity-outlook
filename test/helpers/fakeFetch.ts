@@ -2,6 +2,7 @@ import type { FetchFn } from '../../src/providers/HttpClient.js';
 
 export class FakeFetch {
     readonly urls: URL[] = [];
+    down = false;
 
     constructor(
         private readonly body: string,
@@ -10,6 +11,7 @@ export class FakeFetch {
 
     readonly fetch: FetchFn = async (input) => {
         this.urls.push(new URL(String(input)));
+        if (this.down) throw new TypeError('fetch failed');
         return new Response(this.body, { status: this.status });
     };
 

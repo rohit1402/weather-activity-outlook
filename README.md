@@ -12,10 +12,11 @@ src/
   app.ts            builds the GraphQL Yoga app (used by index.ts and tests)
   config.ts         environment variables
   errors.ts         error classes with stable codes (BAD_USER_INPUT, LOCATION_NOT_FOUND, UPSTREAM_UNAVAILABLE)
+  time.ts           Clock (injectable "now") and localDate(instant, timezone)
   graphql/          schema.ts (type definitions), resolvers.ts, errors.ts (maps errors to extensions.code)
-  services/         business logic, e.g. LocationService
+  services/         business logic: LocationService, MarineService
   providers/        HttpClient and Open-Meteo providers
-  repositories/     SQLite queries, e.g. LocationRepository
+  repositories/     SQLite queries: LocationRepository, MarineConditionsRepository
   scoring/          activity scoring rules (empty for now)
   db/               SQLite connection and schema (tables created on startup)
 test/

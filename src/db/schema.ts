@@ -19,4 +19,12 @@ export const SCHEMA = `
         location_id  INTEGER NOT NULL REFERENCES locations (id),
         PRIMARY KEY (query, country_code)
     );
+
+    CREATE TABLE IF NOT EXISTS daily_marine_conditions (
+        location_id     INTEGER NOT NULL REFERENCES locations (id),
+        date            TEXT    NOT NULL,
+        wave_height_max REAL,
+        wave_period_max REAL,
+        PRIMARY KEY (location_id, date)
+    );
 `;
