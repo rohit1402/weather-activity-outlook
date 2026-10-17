@@ -28,7 +28,6 @@ export class CachedDailyConditions<TDay extends { date: string }> {
         private readonly clock: Clock,
     ) {}
 
-
     async get(location: Location): Promise<DailyConditions<TDay>> {
         const now = this.clock.now();
         const saved = this.source.getState(location.id);
