@@ -14,9 +14,9 @@ src/
   errors.ts         error classes with stable codes (BAD_USER_INPUT, LOCATION_NOT_FOUND, UPSTREAM_UNAVAILABLE)
   time.ts           Clock (injectable "now") and localDate(instant, timezone)
   graphql/          schema.ts (type definitions), resolvers.ts, errors.ts (maps errors to extensions.code)
-  services/         business logic: LocationService, MarineService
+  services/         business logic: LocationService, ForecastService, MarineService
   providers/        HttpClient and Open-Meteo providers
-  repositories/     SQLite queries: LocationRepository, MarineConditionsRepository
+  repositories/     SQLite queries: LocationRepository, WeatherConditionsRepository, MarineConditionsRepository
   scoring/          activity scoring rules (empty for now)
   db/               SQLite connection and schema (tables created on startup)
 test/

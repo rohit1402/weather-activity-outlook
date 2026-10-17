@@ -27,4 +27,19 @@ export const SCHEMA = `
         wave_period_max REAL,
         PRIMARY KEY (location_id, date)
     );
+
+    CREATE TABLE IF NOT EXISTS daily_weather_conditions (
+        location_id               INTEGER NOT NULL REFERENCES locations (id),
+        date                      TEXT    NOT NULL,
+        temp_max                  REAL,
+        temp_min                  REAL,
+        precipitation             REAL,
+        precipitation_probability REAL,
+        snowfall                  REAL,
+        wind_speed_max            REAL,
+        weather_code              INTEGER,
+        cloud_cover               REAL,
+        snow_depth_max            REAL,
+        PRIMARY KEY (location_id, date)
+    );
 `;

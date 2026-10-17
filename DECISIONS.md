@@ -20,7 +20,7 @@ Each activity gets a simple rule-based function: weather in, score and reasons o
 
 ## 3: Data fetched from Open-Meteo
 - Geocoding: `name`, `count=5`, optional `countryCode`; take the top result. In v1, `countryCode` is the only way to steer the choice (e.g. Paris, US). The response includes `country` and `admin1` so users can see which place was picked (Aurangabad returns Maharashtra, not Bihar).
-- Forecast (daily): temperature_2m_max, temperature_2m_min, precipitation_sum, precipitation_probability_max, snowfall_sum, wind_speed_10m_max, weather_code, cloud_cover_mean. Hourly: snow_depth, reduced to a daily max.
+- Forecast (daily): temperature_2m_max, temperature_2m_min, precipitation_sum, precipitation_probability_max, snowfall_sum, wind_speed_10m_max, weather_code, cloud_cover_mean. Hourly: snow_depth, reduced to a daily max per local date (null hours ignored; a day with no values is null) and converted from m to cm, to match snowfall_sum.
 - Marine (daily): wave_height_max, wave_period_max.
 - All requests use `timezone=auto` and `forecast_days=7`. The API's `daily.time` gives the dates that get saved.
 - Every read (fresh or stale) drops days before the location's local today. Even data under 3 hours old can span midnight, so the server always computes today from the location's timezone (Point 13).
@@ -31,12 +31,12 @@ SQLite because reviewers can run it with no setup. For production we can use Pos
 
 First idea was to save locations by latitude and longitude. But the weather APIs move the point to the nearest grid cell (Biarritz moved about 6–7 km), so coordinates aren't stable. The geocoding id is, so I'm using that.
 
-Weather and marine are fetched separately, so they're stored separately: one table each, with one row per location per local date. `daily_marine_conditions` holds the marine fields; a `daily_weather_conditions` table comes with the forecast data. On refresh I overwrite those rows, so no duplicates.
+Weather and marine are fetched separately, so they're stored separately: one table each, with one row per location per local date. `daily_marine_conditions` holds the marine fields and `daily_weather_conditions` the forecast fields. On refresh I overwrite those rows, so no duplicates.
 
 Each also has its own fetch time: two columns on locations, `weather_fetched_at` and `marine_fetched_at`, stored as ISO 8601 UTC strings.
 
 Details:
-- Columns use short names: `temp_max`, `temp_min`, `precipitation`, `precipitation_probability`, `snowfall`, `wind_speed_max`, `weather_code`, `cloud_cover`, `snow_depth_max` (weather) and `wave_height_max`, `wave_period_max` (marine). Values are in the units the API returns.
+- Columns use short names: `temp_max`, `temp_min`, `precipitation`, `precipitation_probability`, `snowfall`, `wind_speed_max`, `weather_code`, `cloud_cover`, `snow_depth_max` (weather) and `wave_height_max`, `wave_period_max` (marine). Values are in the units the API returns, except `snow_depth_max`, which is stored in cm (the API gives m).
 - All condition values are nullable, and nulls are stored as null (Point 9).
 - In `locations`, `id`, `name`, `latitude` and `longitude` are required; `region` (the API's `admin1`), `country`, `country_code`, `timezone` and `elevation` are nullable because the geocoder can omit them.
 - Rows for dates that have dropped out of the window are kept. Reads filter them out, so there's nothing to clean up.
@@ -106,7 +106,7 @@ Exception: `geo-paris.json` and `geo-aurangabad.json` were copied from the spike
 ## 13: Timezone for "today"
 "Today" (Point 3) uses the location's timezone, in this order:
 1. The timezone saved on the location (from the geocoder).
-2. If there isn't one, the timezone the marine response returns (`timezone=auto`). It's saved on the location, so it's only needed once.
-3. UTC, only if neither exists: a location with no timezone whose marine fetch has never succeeded. This can be off by a day for places far from UTC.
+2. If there isn't one, the timezone the forecast or marine response returns (`timezone=auto`), whichever is fetched first. It's saved on the location, so it's only needed once.
+3. UTC, only if neither exists: a location with no timezone whose forecast and marine fetches have never succeeded. This can be off by a day for places far from UTC.
 
 A UTC offset isn't enough on its own, because it changes with daylight saving; the IANA name (e.g. `Europe/Paris`) is needed.
