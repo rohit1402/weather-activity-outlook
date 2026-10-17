@@ -19,7 +19,7 @@ Each activity gets a simple rule-based function: weather in, score and reasons o
 
 
 ## 3: Data fetched from Open-Meteo
-- Geocoding: `name`, `count=5`, optional `countryCode`; take the top result. In v1, `countryCode` is the only way to steer the choice (e.g. Paris, US). The response includes `country` and `admin1` so users can see which place was picked (Aurangabad returns Maharashtra, not Bihar).
+- Geocoding: `name`, `count=5`, optional `countryCode`; take the top result. In v1, `countryCode` is the only way to steer the choice (e.g. Paris, US). The response includes `country` and `region` so users can see which place was picked (Aurangabad returns Maharashtra, not Bihar).
 - Forecast (daily): temperature_2m_max, temperature_2m_min, precipitation_sum, precipitation_probability_max, snowfall_sum, wind_speed_10m_max, weather_code, cloud_cover_mean. Hourly: snow_depth, reduced to a daily max per local date (null hours ignored; a day with no values is null) and converted from m to cm, to match snowfall_sum.
 - Marine (daily): wave_height_max, wave_period_max.
 - All requests use `timezone=auto` and `forecast_days=7`. The API's `daily.time` gives the dates that get saved.
@@ -58,7 +58,7 @@ Geocoding is also Open-Meteo, so I also save which place id each search (name pl
 
 
 ## 6: Results grouped by activity, then days
-I first thought of it as days → activities: "what should I do on Tuesday?" After discussing it, I switched to activity → days: "when should I go surfing?"
+I first thought of it as days → activities: "what should I do on Tuesday?" I switched to activity → days: "when should I go surfing?"
 
 Why I switched:
 - The assignment brief says "how good the next 7 days will be for each activity," which reads as activity -> days.

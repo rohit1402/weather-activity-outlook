@@ -2,12 +2,14 @@
 
 Each day gets a score from 0 to 100 for each activity. Higher is better.
 
+All numbers are in `src/scoring/config.ts`.
+
 ## Applies to all activities
 
 - Scores are clamped to 0–100, then rounded to a whole number.
 - If any field a scorer needs is null, that day gets no score and the reason "Missing data". (Exception: surfing, below.)
 - Ranges include the lower bound and exclude the upper (1.0 m of waves falls in 1–1.5 m).
-- Rain = precipitation - snowfall ÷ 0.7, so snow isn't counted as rain.
+- Rain = max(0, precipitation - snowfall ÷ 0.7), so snow isn't counted as rain.
 - Thunderstorm = weather code 95–99.
 - Every rule that applies adds a reason in plain English, e.g. "8 cm of fresh snow" or "Strong wind (35 km/h)". Reasons don't show points.
 
@@ -18,7 +20,7 @@ Each day gets a score from 0 to 100 for each activity. Higher is better.
 - Snow on the ground of 10 cm or more: +50
 - Fresh snowfall of 1 cm or more: +30
 - Max temp 0 °C or below: +20; above 3 °C: -20 (slush)
-- Rain over 1 mm: -30
+- Rain of 1 mm or more: -30
 - Thunderstorm → 0
 
 ## Surfing (score from wave height)

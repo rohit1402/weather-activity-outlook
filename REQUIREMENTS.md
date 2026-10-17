@@ -25,4 +25,4 @@
 
 ## 3. Out of Scope
 - Building a frontend or mobile application.
-- Users accounts, authentication, and authorization.
+- User accounts, authentication, and authorization.

@@ -2,7 +2,7 @@
 
 GraphQL service that scores the next 7 days for skiing, surfing, outdoor and indoor sightseeing in a given city, using Open-Meteo data. See [REQUIREMENTS.md](REQUIREMENTS.md), [DECISIONS.md](DECISIONS.md), [SCORING.md](SCORING.md) and [WORKLOG.md](WORKLOG.md).
 
-Status: `outlook(city, countryCode)` returns the location and, for each activity (skiing, surfing, outdoor and indoor sightseeing), a status (AVAILABLE, NOT_APPLICABLE or UNAVAILABLE) plus the next days' scores, ranks and reasons. Scoring rules are in [SCORING.md](SCORING.md).
+`outlook(city, countryCode)` returns the location and, for each activity (skiing, surfing, outdoor and indoor sightseeing), a status (AVAILABLE, NOT_APPLICABLE or UNAVAILABLE) plus the next days' scores, ranks and reasons. Scoring rules are in [SCORING.md](SCORING.md).
 
 ## Project layout
 
@@ -17,7 +17,7 @@ src/
   services/         business logic: LocationService, ForecastService, MarineService
   providers/        HttpClient and Open-Meteo providers
   repositories/     SQLite queries: LocationRepository, WeatherConditionsRepository, MarineConditionsRepository
-  scoring/          activity scoring rules (empty for now)
+  scoring/          one pure function per activity; thresholds in config
   db/               SQLite connection and schema (tables created on startup)
 test/
   fixtures/         saved Open-Meteo responses
@@ -71,3 +71,19 @@ curl -X POST localhost:4000/graphql \
 ```
 
 Errors carry a code in `extensions.code`: `BAD_USER_INPUT`, `LOCATION_NOT_FOUND`, `UPSTREAM_UNAVAILABLE`, or `INTERNAL_ERROR` (unexpected errors; details are logged on the server, not returned).
+
+## How data is stored and refreshed
+
+- Open-Meteo responses are stored in SQLite: one table for weather, one for marine data, one row per location per day.
+- Data is refreshed on request when it's older than 3 hours. If Open-Meteo is down, data up to 48 hours old is served with `isStale: true`.
+- City searches are saved too, so a known city still resolves while Open-Meteo is down.
+- Scores are computed on each request, never stored, so scoring rules can change without refetching.
+
+Details and reasoning: [DECISIONS.md](DECISIONS.md), points 4 and 5.
+
+## Assumptions
+
+- A city name resolves to the top geocoding match; `countryCode` steers it (e.g. Paris, US).
+- The 7 days are today plus six, in the location's local timezone.
+- Only weather and wave data count; opening hours, crowds and access don't.
+- Thresholds in [SCORING.md](SCORING.md) are starting heuristics, not tuned values.
