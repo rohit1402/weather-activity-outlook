@@ -19,7 +19,7 @@
 - The forecast window will include today and the following six calendar days, making a 7 day window.
 - Service should make suggestions based on provided city/town local timezone
 - Non-weather factors such as opening hours, crowds and access are not considered.
-- Forecasts will be refreshed periodically, independently of normal GraphQL requests.
+- Forecasts will be refreshed on demand: when a location is requested and its stored data is older than a TTL.
 - Existing persisted forecasts may be served when a refresh fails, provided their age is made clear.
 
 
