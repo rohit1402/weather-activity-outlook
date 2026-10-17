@@ -6,6 +6,7 @@ export interface Tier {
     min?: number;
     max?: number;
     points: number;
+    label?: string;
 }
 
 export const SCORE_MIN = 0;
@@ -32,12 +33,12 @@ export const SKIING = {
 
 export const SURFING = {
     waveHeightM: [
-        { max: 0.5, points: 10 },
-        { min: 0.5, max: 1, points: 40 },
-        { min: 1, max: 1.5, points: 60 },
-        { min: 1.5, max: 2.5, points: 80 },
-        { min: 2.5, max: 3.5, points: 60 },
-        { min: 3.5, points: 20 },
+        { max: 0.5, points: 10, label: 'Waves too small' },
+        { min: 0.5, max: 1, points: 40, label: 'Small waves' },
+        { min: 1, max: 1.5, points: 60, label: 'Decent waves' },
+        { min: 1.5, max: 2.5, points: 80, label: 'Good waves' },
+        { min: 2.5, max: 3.5, points: 60, label: 'Big waves' },
+        { min: 3.5, points: 20, label: 'Dangerously big waves' },
     ] satisfies Tier[],
     /** Waves this high or higher get no period bonus. */
     dangerousWaveM: 3.5,
@@ -50,8 +51,8 @@ export const SURFING = {
 export const OUTDOOR = {
     start: 100,
     rainMm: [
-        { min: 1, max: 5, points: -20 },
-        { min: 5, points: -40 },
+        { min: 1, max: 5, points: -20, label: 'Rain' },
+        { min: 5, points: -40, label: 'Heavy rain' },
     ] satisfies Tier[],
     snowfallCm: 1, // or more
     snowfallPoints: -20,

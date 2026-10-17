@@ -52,13 +52,19 @@ describe('scoring with saved Open-Meteo responses', () => {
         expect(mumbai.map((d) => d.score)).toEqual([10, 10, 10, 10, 10, 10, 10]);
         biarritz.forEach((day, i) => expect(day.score).toBeGreaterThan(mumbai[i]!.score!));
 
-        expect(biarritz[0]!.reasons).toEqual(['+80 waves 2 m', '+20 wave period 12 s']);
-        expect(biarritz[4]!.reasons).toEqual([
-            '+60 waves 2.6 m',
-            '+20 wave period 11.8 s',
-            '−20 wind 38 km/h',
+        expect(biarritz[0]!.reasons).toEqual([
+            'Good waves (2 m)',
+            'Long, well-spaced swell (12 s)',
         ]);
-        expect(mumbai[0]!.reasons).toEqual(['+10 waves 0.3 m', 'wind and storm data unavailable']);
+        expect(biarritz[4]!.reasons).toEqual([
+            'Big waves (2.6 m)',
+            'Long, well-spaced swell (11.8 s)',
+            'Strong wind (38 km/h) makes waves choppy',
+        ]);
+        expect(mumbai[0]!.reasons).toEqual([
+            'Waves too small (0.3 m)',
+            'No wind or storm forecast available',
+        ]);
     });
 
     it('ranks the Biarritz surf days, ties going to the earlier date', async () => {
@@ -80,7 +86,7 @@ describe('scoring with saved Open-Meteo responses', () => {
     it('marks surfing in Delhi as not applicable', async () => {
         expect(surfingApplicability(await marineDays('delhi'))).toEqual({
             applicable: false,
-            reason: 'no marine data, likely inland',
+            reason: 'No marine data, likely inland',
         });
         expect(surfingApplicability(await marineDays('biarritz'))).toEqual({ applicable: true });
     });
@@ -94,7 +100,7 @@ describe('scoring with saved Open-Meteo responses', () => {
         expect(zermatt).toEqual(
             Array.from({ length: 7 }, () => ({
                 score: 0,
-                reasons: ['score 0: no snow'],
+                reasons: ['Not enough snow'],
             })),
         );
     });

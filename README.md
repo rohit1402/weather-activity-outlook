@@ -2,7 +2,7 @@
 
 GraphQL service that scores the next 7 days for skiing, surfing, outdoor and indoor sightseeing in a given city, using Open-Meteo data. See [REQUIREMENTS.md](REQUIREMENTS.md), [DECISIONS.md](DECISIONS.md), [SCORING.md](SCORING.md) and [WORKLOG.md](WORKLOG.md).
 
-Status: the API has an `outlook(city, countryCode)` query that returns the resolved location (Open-Meteo geocoding, saved to SQLite), plus `health`. Weather ingestion and scoring aren't built yet.
+Status: `outlook(city, countryCode)` returns the location and, for each activity (skiing, surfing, outdoor and indoor sightseeing), a status (AVAILABLE, NOT_APPLICABLE or UNAVAILABLE) plus the next days' scores, ranks and reasons. Scoring rules are in [SCORING.md](SCORING.md).
 
 ## Project layout
 
@@ -67,8 +67,7 @@ With the server running, open http://localhost:4000/graphql for GraphiQL, or:
 ```sh
 curl -X POST localhost:4000/graphql \
   -H 'content-type: application/json' \
-  -d '{"query":"{ outlook(city: \"Paris\") { location { name region country timezone } } }"}'
-# {"data":{"outlook":{"location":{"name":"Paris","region":"Île-de-France Region","country":"France","timezone":"Europe/Paris"}}}}
+  -d '{"query":"{ outlook(city: \"Biarritz\") { location { name country } fetchedAt isStale activities { activity status reason days { date score rank reasons } } } }"}'
 ```
 
 Errors carry a code in `extensions.code`: `BAD_USER_INPUT`, `LOCATION_NOT_FOUND`, `UPSTREAM_UNAVAILABLE`, or `INTERNAL_ERROR` (unexpected errors; details are logged on the server, not returned).

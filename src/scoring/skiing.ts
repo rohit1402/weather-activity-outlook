@@ -22,32 +22,38 @@ export function scoreSkiing({ weather }: DayConditions): DayScore {
     if (!w) return missingData();
 
     if (isThunderstorm(w.weatherCode)) {
-        return fixedScore(0, `score 0: thunderstorm possible (code ${w.weatherCode})`);
+        return fixedScore(0, 'Thunderstorms likely, unsafe on the slopes');
     }
     if (w.snowfall < SKIING.minSnowCm && w.snowDepthMax < SKIING.minSnowDepthCm) {
-        return fixedScore(0, 'score 0: no snow');
+        return fixedScore(0, 'Not enough snow');
     }
 
     const tally = new Tally();
     if (w.snowDepthMax >= SKIING.minSnowDepthCm) {
         tally.add(
             SKIING.snowOnGroundPoints,
-            `snow on the ground (${formatNumber(w.snowDepthMax)} cm)`,
+            `${formatNumber(w.snowDepthMax)} cm of snow on the ground`,
         );
     }
     if (w.snowfall >= SKIING.minSnowCm) {
-        tally.add(SKIING.freshSnowPoints, `fresh snow (${formatNumber(w.snowfall)} cm)`);
+        tally.add(SKIING.freshSnowPoints, `${formatNumber(w.snowfall)} cm of fresh snow`);
     }
 
     if (w.tempMax <= SKIING.freezingC) {
-        tally.add(SKIING.freezingPoints, `max ${formatNumber(w.tempMax)} °C`);
+        tally.add(
+            SKIING.freezingPoints,
+            `Freezing temperatures (max ${formatNumber(w.tempMax)} °C)`,
+        );
     } else if (w.tempMax > SKIING.slushAboveC) {
-        tally.add(SKIING.slushPoints, `slush: max ${formatNumber(w.tempMax)} °C`);
+        tally.add(
+            SKIING.slushPoints,
+            `Too warm, snow turns to slush (max ${formatNumber(w.tempMax)} °C)`,
+        );
     }
 
     const rain = rainAmount(w.precipitation, w.snowfall);
     if (rain > SKIING.rainOverMm) {
-        tally.add(SKIING.rainPoints, `rain ${formatNumber(rain)} mm`);
+        tally.add(SKIING.rainPoints, `Rain (${formatNumber(rain)} mm)`);
     }
 
     return tally.result();

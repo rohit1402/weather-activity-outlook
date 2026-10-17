@@ -34,11 +34,7 @@ export function requireFields<T extends object, K extends keyof T>(
 }
 
 export function formatNumber(value: number): string {
-    return String(Math.round(value * 10) / 10).replace('-', '−');
-}
-
-export function formatPoints(points: number): string {
-    return points < 0 ? formatNumber(points) : `+${formatNumber(points)}`;
+    return String(Math.round(value * 10) / 10);
 }
 
 export const missingData = (): DayScore => ({ score: null, reasons: [MISSING_DATA] });
@@ -55,9 +51,9 @@ export class Tally {
         this.total = start;
     }
 
-    add(points: number, description: string): this {
+    add(points: number, reason: string): this {
         this.total += points;
-        this.reasons.push(`${formatPoints(points)} ${description}`);
+        this.reasons.push(reason);
         return this;
     }
 

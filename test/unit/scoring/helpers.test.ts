@@ -52,7 +52,7 @@ describe('rainAmount', () => {
     });
 
     it('keeps the rain part of a mixed rain-and-snow day', () => {
-        // 1.4 cm of snow is 2 mm of water, so 5 − 2 = 3 mm of rain.
+        // 1.4 cm of snow is 2 mm of water, so 5 - 2 = 3 mm of rain.
         expect(rainAmount(5, 1.4)).toBeCloseTo(3);
     });
 
@@ -85,8 +85,8 @@ describe('clamp and Tally', () => {
     });
 
     it('clamps and rounds once at the end, keeping every reason', () => {
-        const result = new Tally(10).add(-7.8, 'cold').add(-20, 'wind').note('a note').result();
-        expect(result).toEqual({ score: 0, reasons: ['−7.8 cold', '−20 wind', 'a note'] });
+        const result = new Tally(10).add(-7.8, 'Cold').add(-20, 'Wind').note('A note').result();
+        expect(result).toEqual({ score: 0, reasons: ['Cold', 'Wind', 'A note'] });
     });
 
     it('rounds the final score to a whole number', () => {

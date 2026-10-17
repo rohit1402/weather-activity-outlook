@@ -1,10 +1,9 @@
 import { isDbUp, type Db } from '../db/connection.js';
-import type { Location } from '../providers/GeocodingProvider.js';
-import type { LocationService } from '../services/LocationService.js';
+import type { Outlook, OutlookService } from '../services/OutlookService.js';
 
 export interface ResolverDeps {
     db: Db;
-    locationService: LocationService;
+    outlookService: OutlookService;
 }
 
 interface OutlookArgs {
@@ -12,21 +11,20 @@ interface OutlookArgs {
     countryCode?: string | null;
 }
 
-interface Outlook {
-    location: Location;
-}
+type OutlookResult = Omit<Outlook, 'fetchedAt'> & { fetchedAt: string | null };
 
 interface Health {
     status: 'ok' | 'degraded';
     database: boolean;
 }
 
-export function createResolvers({ db, locationService }: ResolverDeps) {
+export function createResolvers({ db, outlookService }: ResolverDeps) {
     return {
         Query: {
-            outlook: async (_parent: unknown, args: OutlookArgs): Promise<Outlook> => ({
-                location: await locationService.resolveLocation(args.city, args.countryCode),
-            }),
+            outlook: async (_parent: unknown, args: OutlookArgs): Promise<OutlookResult> => {
+                const outlook = await outlookService.getOutlook(args.city, args.countryCode);
+                return { ...outlook, fetchedAt: outlook.fetchedAt?.toISOString() ?? null };
+            },
 
             health: (): Health => {
                 const database = isDbUp(db);

@@ -25,10 +25,10 @@ export function scoreOutdoor({ weather }: DayConditions): DayScore {
 
     const rain = rainAmount(w.precipitation, w.snowfall);
     const rainTier = findTier(rain, OUTDOOR.rainMm);
-    if (rainTier) tally.add(rainTier.points, `rain ${formatNumber(rain)} mm`);
+    if (rainTier) tally.add(rainTier.points, `${rainTier.label} (${formatNumber(rain)} mm)`);
 
     if (w.snowfall >= OUTDOOR.snowfallCm) {
-        tally.add(OUTDOOR.snowfallPoints, `snowfall ${formatNumber(w.snowfall)} cm`);
+        tally.add(OUTDOOR.snowfallPoints, `Snowfall (${formatNumber(w.snowfall)} cm)`);
     }
 
     const degreesOutside =
@@ -40,16 +40,16 @@ export function scoreOutdoor({ weather }: DayConditions): DayScore {
             degreesOutside * OUTDOOR.pointsPerDegree,
             OUTDOOR.maxTemperaturePenalty,
         );
-        const feel = w.tempMax < OUTDOOR.comfortableMinC ? 'cold' : 'hot';
-        tally.add(penalty, `${feel}: max ${formatNumber(w.tempMax)} °C`);
+        const feel = w.tempMax < OUTDOOR.comfortableMinC ? 'Cold weather' : 'Hot weather';
+        tally.add(penalty, `${feel} (max ${formatNumber(w.tempMax)} °C)`);
     }
 
     if (w.windSpeedMax >= OUTDOOR.windKmh) {
-        tally.add(OUTDOOR.windPoints, `wind ${formatNumber(w.windSpeedMax)} km/h`);
+        tally.add(OUTDOOR.windPoints, `Strong wind (${formatNumber(w.windSpeedMax)} km/h)`);
     }
 
     if (isThunderstorm(w.weatherCode)) {
-        tally.add(OUTDOOR.thunderstormPoints, `thunderstorm possible (code ${w.weatherCode})`);
+        tally.add(OUTDOOR.thunderstormPoints, 'Possible thunderstorms');
     }
 
     return tally.result();
