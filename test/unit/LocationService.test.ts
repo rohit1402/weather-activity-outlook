@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { openDb, type Db } from '../../src/db/connection.js';
 import {
-    InvalidInputError,
+    BadUserInputError,
     LocationNotFoundError,
     UpstreamUnavailableError,
 } from '../../src/errors.js';
@@ -138,14 +138,14 @@ describe('LocationService.resolveLocation', () => {
         ['a 1-character name', 'P', undefined],
         ['a 3-letter country code', 'Queenstown', 'NZL'],
         ['a numeric country code', 'Queenstown', '64'],
-    ])('rejects %s as INVALID_INPUT without calling the geocoder', async (_label, city, code) => {
+    ])('rejects %s as BAD_USER_INPUT without calling the geocoder', async (_label, city, code) => {
         const geocoder = new StubGeocoder([NEW_ZEALAND]);
         const err = await serviceWith(geocoder)
             .resolveLocation(city, code)
             .catch((e: unknown) => e);
 
-        expect(err).toBeInstanceOf(InvalidInputError);
-        expect(err).toMatchObject({ code: 'INVALID_INPUT' });
+        expect(err).toBeInstanceOf(BadUserInputError);
+        expect(err).toMatchObject({ code: 'BAD_USER_INPUT' });
         expect(geocoder.queries).toEqual([]);
     });
 });

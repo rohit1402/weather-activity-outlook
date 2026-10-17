@@ -2,7 +2,7 @@
 
 GraphQL service that scores the next 7 days for skiing, surfing, outdoor and indoor sightseeing in a given city, using Open-Meteo data. See [REQUIREMENTS.md](REQUIREMENTS.md), [DECISIONS.md](DECISIONS.md) and [WORKLOG.md](WORKLOG.md).
 
-Status: the API has a `health` query. Location resolution (Open-Meteo geocoding, saved to SQLite) is implemented but not yet exposed through GraphQL; weather ingestion and scoring aren't built yet.
+Status: the API has an `outlook(city, countryCode)` query that returns the resolved location (Open-Meteo geocoding, saved to SQLite), plus `health`. Weather ingestion and scoring aren't built yet.
 
 ## Project layout
 
@@ -11,8 +11,8 @@ src/
   index.ts          entrypoint: starts the HTTP server
   app.ts            builds the GraphQL Yoga app (used by index.ts and tests)
   config.ts         environment variables
-  errors.ts         error classes with stable codes (INVALID_INPUT, LOCATION_NOT_FOUND, UPSTREAM_UNAVAILABLE)
-  graphql/          schema.ts (type definitions), resolvers.ts
+  errors.ts         error classes with stable codes (BAD_USER_INPUT, LOCATION_NOT_FOUND, UPSTREAM_UNAVAILABLE)
+  graphql/          schema.ts (type definitions), resolvers.ts, errors.ts (maps errors to extensions.code)
   services/         business logic, e.g. LocationService
   providers/        HttpClient and Open-Meteo providers
   repositories/     SQLite queries, e.g. LocationRepository
@@ -66,6 +66,8 @@ With the server running, open http://localhost:4000/graphql for GraphiQL, or:
 ```sh
 curl -X POST localhost:4000/graphql \
   -H 'content-type: application/json' \
-  -d '{"query":"{ health { status database } }"}'
-# {"data":{"health":{"status":"ok","database":true}}}
+  -d '{"query":"{ outlook(city: \"Paris\") { location { name region country timezone } } }"}'
+# {"data":{"outlook":{"location":{"name":"Paris","region":"Île-de-France Region","country":"France","timezone":"Europe/Paris"}}}}
 ```
+
+Errors carry a code in `extensions.code`: `BAD_USER_INPUT`, `LOCATION_NOT_FOUND`, `UPSTREAM_UNAVAILABLE`, or `INTERNAL_ERROR` (unexpected errors; details are logged on the server, not returned).

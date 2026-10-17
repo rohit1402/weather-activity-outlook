@@ -1,4 +1,4 @@
-import { InvalidInputError, LocationNotFoundError } from '../errors.js';
+import { BadUserInputError, LocationNotFoundError } from '../errors.js';
 import type { GeocodingProvider, Location } from '../providers/GeocodingProvider.js';
 import type { LocationRepository, QueryKey } from '../repositories/LocationRepository.js';
 
@@ -35,14 +35,14 @@ export class LocationService {
     private static normalize(city: string, countryCode?: string | null): QueryKey {
         const query = city.trim().replace(/\s+/g, ' ').toLowerCase();
         if (query.length < LocationService.MIN_NAME_LENGTH) {
-            throw new InvalidInputError(
+            throw new BadUserInputError(
                 `Location name must be at least ${LocationService.MIN_NAME_LENGTH} characters`,
             );
         }
 
         const code = countryCode?.trim().toUpperCase() ?? '';
         if (code !== '' && !LocationService.COUNTRY_CODE.test(code)) {
-            throw new InvalidInputError('countryCode must be a 2-letter ISO code, e.g. "NZ"');
+            throw new BadUserInputError('countryCode must be a 2-letter ISO code, e.g. "NZ"');
         }
 
         return { query, countryCode: code };

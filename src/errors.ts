@@ -1,4 +1,4 @@
-export type ErrorCode = 'INVALID_INPUT' | 'LOCATION_NOT_FOUND' | 'UPSTREAM_UNAVAILABLE';
+export type ErrorCode = 'BAD_USER_INPUT' | 'LOCATION_NOT_FOUND' | 'UPSTREAM_UNAVAILABLE';
 
 /** Base class for errors the API reports to clients, each with a stable code. */
 export abstract class AppError extends Error {
@@ -10,8 +10,8 @@ export abstract class AppError extends Error {
     }
 }
 
-export class InvalidInputError extends AppError {
-    readonly code = 'INVALID_INPUT';
+export class BadUserInputError extends AppError {
+    readonly code = 'BAD_USER_INPUT';
 }
 
 export class LocationNotFoundError extends AppError {

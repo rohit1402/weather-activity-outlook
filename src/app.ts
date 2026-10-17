@@ -1,10 +1,11 @@
 import { createSchema, createYoga } from 'graphql-yoga';
-import type { Db } from './db/connection.js';
-import { createResolvers } from './graphql/resolvers.js';
+import { maskError } from './graphql/errors.js';
+import { createResolvers, type ResolverDeps } from './graphql/resolvers.js';
 import { typeDefs } from './graphql/schema.js';
 
-export function createApp(db: Db) {
+export function createApp(deps: ResolverDeps) {
     return createYoga({
-        schema: createSchema({ typeDefs, resolvers: createResolvers(db) }),
+        schema: createSchema({ typeDefs, resolvers: createResolvers(deps) }),
+        maskedErrors: { maskError },
     });
 }
