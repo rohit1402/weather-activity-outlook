@@ -2,7 +2,7 @@
 
 GraphQL service that scores the next 7 days for skiing, surfing, outdoor and indoor sightseeing in a given city, using Open-Meteo data. See [REQUIREMENTS.md](REQUIREMENTS.md), [DECISIONS.md](DECISIONS.md) and [WORKLOG.md](WORKLOG.md).
 
-Status: the API has a `health` query. Location lookup, weather ingestion and scoring aren't built yet.
+Status: the API has a `health` query. Location resolution (Open-Meteo geocoding, saved to SQLite) is implemented but not yet exposed through GraphQL; weather ingestion and scoring aren't built yet.
 
 ## Project layout
 
@@ -11,16 +11,18 @@ src/
   index.ts          entrypoint: starts the HTTP server
   app.ts            builds the GraphQL Yoga app (used by index.ts and tests)
   config.ts         environment variables
+  errors.ts         error classes with stable codes (INVALID_INPUT, LOCATION_NOT_FOUND, UPSTREAM_UNAVAILABLE)
   graphql/          schema.ts (type definitions), resolvers.ts
-  services/         business logic (empty for now)
-  providers/        Open-Meteo HTTP clients (empty for now)
-  repositories/     SQLite queries (empty for now)
+  services/         business logic, e.g. LocationService
+  providers/        HttpClient and Open-Meteo providers
+  repositories/     SQLite queries, e.g. LocationRepository
   scoring/          activity scoring rules (empty for now)
-  db/               SQLite connection
+  db/               SQLite connection and schema (tables created on startup)
 test/
   fixtures/         saved Open-Meteo responses
-  unit/             no I/O
-  integration/      through the GraphQL app with a real (in-memory) SQLite
+  unit/             one class at a time, with fakes
+  integration/      real classes wired together; fetch is faked, SQLite is in-memory
+  helpers/          fake fetch and fixture loader
 ```
 
 ## Setup
@@ -55,6 +57,7 @@ cp .env.example .env   # optional; defaults work without it
 | `OPEN_METEO_GEOCODING_URL` | `https://geocoding-api.open-meteo.com/v1/search` | Geocoding endpoint |
 | `OPEN_METEO_FORECAST_URL` | `https://api.open-meteo.com/v1/forecast` | Weather forecast endpoint |
 | `OPEN_METEO_MARINE_URL` | `https://marine-api.open-meteo.com/v1/marine` | Marine (wave) endpoint |
+| `OPEN_METEO_TIMEOUT_MS` | `5000` | Timeout for each Open-Meteo request |
 
 ## Try it
 

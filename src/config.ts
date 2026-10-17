@@ -5,6 +5,7 @@ export interface Config {
         geocodingUrl: string;
         forecastUrl: string;
         marineUrl: string;
+        timeoutMs: number;
     };
 }
 
@@ -21,6 +22,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     if (!Number.isInteger(port) || port < 0 || port > 65535) {
         throw new Error(`Invalid PORT: ${env.PORT}`);
     }
+
+    const timeoutMs = Number(env.OPEN_METEO_TIMEOUT_MS ?? 5000);
+    if (!Number.isInteger(timeoutMs) || timeoutMs <= 0) {
+        throw new Error(`Invalid OPEN_METEO_TIMEOUT_MS: ${env.OPEN_METEO_TIMEOUT_MS}`);
+    }
+
     return {
         port,
         databasePath: env.DATABASE_PATH ?? 'data/weather.db',
@@ -40,6 +47,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
                 'OPEN_METEO_MARINE_URL',
                 'https://marine-api.open-meteo.com/v1/marine',
             ),
+            timeoutMs,
         },
     };
 }

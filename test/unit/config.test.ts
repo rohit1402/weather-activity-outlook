@@ -10,6 +10,7 @@ describe('loadConfig', () => {
                 geocodingUrl: 'https://geocoding-api.open-meteo.com/v1/search',
                 forecastUrl: 'https://api.open-meteo.com/v1/forecast',
                 marineUrl: 'https://marine-api.open-meteo.com/v1/marine',
+                timeoutMs: 5000,
             },
         });
     });
@@ -22,6 +23,7 @@ describe('loadConfig', () => {
                 OPEN_METEO_GEOCODING_URL: 'http://localhost:9000/geo',
                 OPEN_METEO_FORECAST_URL: 'http://localhost:9000/forecast',
                 OPEN_METEO_MARINE_URL: 'http://localhost:9000/marine',
+                OPEN_METEO_TIMEOUT_MS: '2500',
             }),
         ).toEqual({
             port: 8080,
@@ -30,12 +32,19 @@ describe('loadConfig', () => {
                 geocodingUrl: 'http://localhost:9000/geo',
                 forecastUrl: 'http://localhost:9000/forecast',
                 marineUrl: 'http://localhost:9000/marine',
+                timeoutMs: 2500,
             },
         });
     });
 
     it('rejects an invalid PORT', () => {
         expect(() => loadConfig({ PORT: 'abc' })).toThrow('Invalid PORT: abc');
+    });
+
+    it('rejects a non-positive timeout', () => {
+        expect(() => loadConfig({ OPEN_METEO_TIMEOUT_MS: '0' })).toThrow(
+            'Invalid OPEN_METEO_TIMEOUT_MS: 0',
+        );
     });
 
     it('rejects an invalid Open-Meteo URL', () => {
