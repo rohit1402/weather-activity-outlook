@@ -41,7 +41,7 @@ export function scoreSurfing(marine: MarineDay, weather: WeatherDay | null): Day
     const waveTier = findTier(height, SURFING.waveHeightM)!;
     tally.add(waveTier.points, `${waveTier.label} (${formatNumber(height)} m)`);
 
-    if (period >= SURFING.longPeriodS && height < SURFING.dangerousWaveM) {
+    if (period >= SURFING.longPeriodS && !waveTier.dangerous) {
         tally.add(SURFING.longPeriodPoints, `Long, well-spaced swell (${formatNumber(period)} s)`);
     }
 

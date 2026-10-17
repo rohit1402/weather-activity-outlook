@@ -9,6 +9,19 @@ export interface Tier {
     label?: string;
 }
 
+export interface WaveTier extends Tier {
+    dangerous?: boolean;
+}
+
+const WAVE_HEIGHT_M: readonly WaveTier[] = [
+    { max: 0.5, points: 10, label: 'Waves too small' },
+    { min: 0.5, max: 1, points: 40, label: 'Small waves' },
+    { min: 1, max: 1.5, points: 60, label: 'Decent waves' },
+    { min: 1.5, max: 2.5, points: 80, label: 'Good waves' },
+    { min: 2.5, max: 3.5, points: 60, label: 'Big waves' },
+    { min: 3.5, points: 20, label: 'Dangerously big waves', dangerous: true },
+];
+
 export const SCORE_MIN = 0;
 export const SCORE_MAX = 100;
 
@@ -32,16 +45,7 @@ export const SKIING = {
 } as const;
 
 export const SURFING = {
-    waveHeightM: [
-        { max: 0.5, points: 10, label: 'Waves too small' },
-        { min: 0.5, max: 1, points: 40, label: 'Small waves' },
-        { min: 1, max: 1.5, points: 60, label: 'Decent waves' },
-        { min: 1.5, max: 2.5, points: 80, label: 'Good waves' },
-        { min: 2.5, max: 3.5, points: 60, label: 'Big waves' },
-        { min: 3.5, points: 20, label: 'Dangerously big waves' },
-    ] satisfies Tier[],
-    /** Waves this high or higher get no period bonus. */
-    dangerousWaveM: 3.5,
+    waveHeightM: WAVE_HEIGHT_M,
     longPeriodS: 10,
     longPeriodPoints: 20,
     windKmh: 30, // or more
